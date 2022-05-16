@@ -189,6 +189,20 @@ In vue-cli, nuxt, and vite projects, this file usually goes under a folder named
 
 You can more about the syntax on [Netlify documentation](https://docs.netlify.com/routing/redirects/rewrites-proxies/#history-pushstate-and-single-page-apps). You can also [create a `netlify.toml`](https://docs.netlify.com/configure-builds/file-based-configuration/) to combine _redirections_ with other Netlify features.
 
+### Azure Static Web App
+Create a staticwebapp.config.json file in the public folder with the following configuration. If the route does not exist, Azure will redirects all requests to index.html except for assets and favicons.
+```
+{
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": [
+            "/assets/*",
+            "/favicons/*"
+       ]
+    }
+}
+```
+
 ### Vercel
 
 Create a `vercel.json` file under the root directory of your project with the following:
