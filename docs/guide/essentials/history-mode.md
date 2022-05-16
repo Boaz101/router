@@ -66,6 +66,20 @@ While it's not recommended, you can use this mode inside Browser applications bu
 
 **Note**: The following examples assume you are serving your app from the root folder. If you deploy to a subfolder, you should use [the `publicPath` option of Vue CLI](https://cli.vuejs.org/config/#publicpath) and the related [`base` property of the router](../../api/#createwebhistory). You also need to adjust the examples below to use the subfolder instead of the root folder (e.g. replacing `RewriteBase /` with `RewriteBase /name-of-your-subfolder/`).
 
+### Azure Static Web App
+Create a staticwebapp.config.json file in the public folder with the following configuration. If the route does not exist, Azure will redirects all requests to index.html except for assets and favicons.
+```
+{
+    "navigationFallback": {
+        "rewrite": "/index.html",
+        "exclude": [
+            "/assets/*",
+            "/favicons/*"
+       ]
+    }
+}
+```
+
 ### Apache
 
 ```apacheconf
