@@ -1,5 +1,4 @@
 import path from 'path'
-import { promises as fsp } from 'fs'
 import ts from 'rollup-plugin-typescript2'
 import replace from '@rollup/plugin-replace'
 import resolve from '@rollup/plugin-node-resolve'
@@ -18,52 +17,47 @@ const banner = `/*!
 let hasTSChecked = false
 
 const outputConfigs = {
-  // each file name has the format: `dist/${name}.${format}.${ext}`
+  // each file name has the format: `dist/${name}.${format}.js`
   // format being a key of this object
-  mjs: {
+  'esm-bundler': {
     file: pkg.module,
     format: `es`,
   },
   cjs: {
-    file: 'dist/vue-router.cjs',
+    file: pkg.main,
     format: `cjs`,
   },
   global: {
     file: pkg.unpkg,
     format: `iife`,
   },
-  browser: {
-    file: 'dist/vue-router.esm-browser.js',
+  esm: {
+    file: pkg.browser || pkg.module.replace('bundler', 'browser'),
     format: `es`,
   },
 }
 
-const stubs = {
-  'dist/vue-router.cjs': 'vue-router.cjs.js',
-  'dist/vue-router.mjs': 'vue-router.esm-bundler.js',
-  'dist/vue-router.prod.cjs': 'vue-router.cjs.prod.js',
-}
-
-const packageBuilds = Object.keys(outputConfigs)
+const allFormats = Object.keys(outputConfigs)
 // in vue-router there are not that many
-const packageConfigs = packageBuilds.map(buildName =>
-  createConfig(buildName, outputConfigs[buildName])
+const packageFormats = allFormats
+const packageConfigs = packageFormats.map(format =>
+  createConfig(format, outputConfigs[format])
 )
 
 // only add the production ready if we are bundling the options
-packageBuilds.forEach(buildName => {
-  if (buildName === 'cjs') {
-    packageConfigs.push(createProductionConfig(buildName))
-  } else if (buildName === 'global') {
-    packageConfigs.push(createMinifiedConfig(buildName))
+packageFormats.forEach(format => {
+  if (format === 'cjs') {
+    packageConfigs.push(createProductionConfig(format))
+  } else if (format === 'global') {
+    packageConfigs.push(createMinifiedConfig(format))
   }
 })
 
 export default packageConfigs
 
-function createConfig(buildName, output, plugins = []) {
+function createConfig(format, output, plugins = []) {
   if (!output) {
-    console.log(require('chalk').yellow(`invalid format: "${buildName}"`))
+    console.log(require('chalk').yellow(`invalid format: "${format}"`))
     process.exit(1)
   }
 
@@ -76,11 +70,11 @@ function createConfig(buildName, output, plugins = []) {
     // '@vue/devtools-api': 'VueDevtoolsApi',
   }
 
-  const isProductionBuild = /\.prod\.[cm]?js$/.test(output.file)
-  const isGlobalBuild = buildName === 'global'
-  const isRawESMBuild = buildName === 'browser'
-  const isNodeBuild = buildName === 'cjs'
-  const isBundlerESMBuild = buildName === 'mjs'
+  const isProductionBuild = /\.prod\.js$/.test(output.file)
+  const isGlobalBuild = format === 'global'
+  const isRawESMBuild = format === 'esm'
+  const isNodeBuild = format === 'cjs'
+  const isBundlerESMBuild = /esm-bundler/.test(format)
 
   if (isGlobalBuild) output.name = 'VueRouter'
 
@@ -128,20 +122,6 @@ function createConfig(buildName, output, plugins = []) {
       ),
       ...nodePlugins,
       ...plugins,
-      {
-        async writeBundle() {
-          const stub = stubs[output.file]
-          if (!stub) return
-
-          const contents =
-            buildName === 'cjs'
-              ? `module.exports = require('../${output.file}')`
-              : `export * from '../${output.file}'`
-
-          await fsp.writeFile(path.resolve(__dirname, `dist/${stub}`), contents)
-          console.log(`created stub ${require('chalk').bold(`dist/${stub}`)}`)
-        },
-      },
     ],
     output,
     // onwarn: (msg, warn) => {
@@ -194,10 +174,8 @@ function createReplacePlugin(
 }
 
 function createProductionConfig(format) {
-  const extension = format === 'cjs' ? 'cjs' : 'js'
-  const descriptor = format === 'cjs' ? '' : `.${format}`
   return createConfig(format, {
-    file: `dist/${name}${descriptor}.prod.${extension}`,
+    file: `dist/${name}.${format}.prod.js`,
     format: outputConfigs[format].format,
   })
 }

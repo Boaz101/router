@@ -1,32 +1,11 @@
 {
   "name": "vue-router",
   "version": "4.0.15",
-  "main": "index.js",
+  "main": "dist/vue-router.cjs.js",
   "unpkg": "dist/vue-router.global.js",
   "jsdelivr": "dist/vue-router.global.js",
-  "module": "dist/vue-router.mjs",
+  "module": "dist/vue-router.esm-bundler.js",
   "types": "dist/vue-router.d.ts",
-  "exports": {
-    ".": {
-      "browser": "./dist/vue-router.esm-browser.js",
-      "node": {
-        "import": {
-          "production": "./dist/vue-router.prod.cjs",
-          "development": "./dist/vue-router.mjs",
-          "default": "./dist/vue-router.mjs"
-        },
-        "require": {
-          "production": "./dist/vue-router.prod.cjs",
-          "development": "./dist/vue-router.cjs",
-          "default": "./index.js"
-        }
-      },
-      "import": "./dist/vue-router.mjs"
-    },
-    "./dist/*": "./dist/*",
-    "./vetur/*": "./vetur/*",
-    "./package.json": "./package.json"
-  },
   "sideEffects": false,
   "funding": "https://github.com/sponsors/posva",
   "license": "MIT",
@@ -39,8 +18,7 @@
   },
   "homepage": "https://github.com/vuejs/router#readme",
   "files": [
-    "index.js",
-    "dist/*.{js,cjs,mjs}",
+    "dist/*.js",
     "dist/vue-router.d.ts",
     "vetur/tags.json",
     "vetur/attributes.json",
@@ -50,7 +28,7 @@
     "dev": "vite --config playground/vite.config.js",
     "release": "bash scripts/release.sh",
     "changelog": "conventional-changelog -p angular -i CHANGELOG.md -s -r 1",
-    "build": "rimraf dist && rollup -c rollup.config.js",
+    "build": "rollup -c rollup.config.js",
     "build:dts": "api-extractor run --local --verbose && tail -n +9 src/globalExtensions.ts >> dist/vue-router.d.ts",
     "build:playground": "vue-tsc --noEmit && vite build --config playground/vite.config.js",
     "build:e2e": "vue-tsc --noEmit && vite build --config e2e/vite.config.js",
@@ -126,7 +104,6 @@
     "nightwatch": "^1.7.11",
     "nightwatch-helpers": "^1.2.0",
     "prettier": "^2.4.1",
-    "rimraf": "^3.0.2",
     "rollup": "^2.68.0",
     "rollup-plugin-analyzer": "^4.0.0",
     "rollup-plugin-terser": "^7.0.2",
